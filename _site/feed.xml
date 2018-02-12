@@ -1,4 +1,313 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.2">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2018-02-11T20:01:50-08:00</updated><id>http://localhost:4000/</id><title type="html">doctorless.sh</title><subtitle>A basic blog for a basic bit-twiddler who can't give more than their two bits.</subtitle><entry><title type="html">Your Company Should Have A Red Team</title><link href="http://localhost:4000/2017-08-11-your-company-should-have-a-red-team" rel="alternate" type="text/html" title="Your Company Should Have A Red Team" /><published>2017-08-11T00:00:00-07:00</published><updated>2017-08-11T00:00:00-07:00</updated><id>http://localhost:4000/your-company-should-have-a-red-team</id><content type="html" xml:base="http://localhost:4000/2017-08-11-your-company-should-have-a-red-team">&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*uSGYOkkgQ-XVKfdXVOPQjw.png&quot; alt=&quot;red team&quot; title=&quot;red team&quot; /&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.2">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2018-02-11T22:04:19-08:00</updated><id>http://localhost:4000/</id><title type="html">doctorless.sh</title><subtitle>In Securitas Veritas</subtitle><entry><title type="html">Thinking Like A Hacker — Part III: At Smart Lock, Your Voice Is Your Password</title><link href="http://localhost:4000/2017-08-19-thinking-like-a-hacker-part-3" rel="alternate" type="text/html" title="Thinking Like A Hacker — Part III: At Smart Lock, Your Voice Is Your Password" /><published>2017-08-19T00:00:00-07:00</published><updated>2017-08-19T00:00:00-07:00</updated><id>http://localhost:4000/thinking-like-a-hacker-part-3</id><content type="html" xml:base="http://localhost:4000/2017-08-19-thinking-like-a-hacker-part-3">&lt;p&gt;In &lt;a href=&quot;/2017-08-12-thinking-like-a-hacker-part-1&quot;&gt;Part I&lt;/a&gt;, I cover an approach to finding the hacking mindset through looking at your own code. In &lt;a href=&quot;/2017-08-14-thinking-like-a-hacker-part-2&quot;&gt;Part II&lt;/a&gt;, I approach this discovery through an analysis of an active hacking attempt. Disclaimer: This story (as well as prior stories) is entirely fictional. While I may refer to publicized vulnerabilities in passing, the “discovered” vulnerabilities within the story do not correspond to any actual product.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;Return to the Smart Lock adventures. Theoretical you, having just broken into your home by virtue of exploiting your own product, realize you have some work to do. Of course, just fixing bugs won’t do. You’ve got thousands of stars on GitHub and dozens of pull requests on your issue tracker to review! One pull request stands out as the most interesting next feature: voice mail.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*frytsUpkN8Dfox0xEcHEdA.png&quot; alt=&quot;hey&quot; title=&quot;hey&quot; /&gt;
+On second thought…&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Feature description: The ability for a visitor to leave a message, either by microphone on the lock, or through the app when in proximity to send a voice message by bluetooth. Messages can be reviewed either on the lock, or through your account on the app.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Neat.&lt;/p&gt;
+
+&lt;p&gt;Concerned by your own break-in, you decide it wise to consider all possibilities, no matter how esoteric, that may lead this feature back into your home. A few things spark your imagination:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Too long of a message could run your lock’s local storage out of space. &lt;em&gt;Need to enforce storage limits, or just stream it from the API.&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;In order to leave a message through the app, the lock will need to broadcast an identifier to local bluetooth devices to associate the message with the lock. &lt;em&gt;Broadcasting the ID of the lock shouldn’t (in theory) lead to compromise, but you already know how well that went for you. Better to have the lock generate a new ID to use to store the message.&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;While the only way you can get a message to the lock is by proximity, there’s nothing stopping you from getting the ID, then sending whatever you want as a file manually. &lt;em&gt;Got to check the file type of the submitted data. More importantly, it needs to actually check the file, not just the file extension.&lt;/em&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Other than those concerns, it seems like a solid PR. You merge it into a new feature branch so you can add your changes, and spin up a test environment.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*3JkbVw0x0dirJBgVMooJZA.png&quot; alt=&quot;dos boot&quot; title=&quot;dos boot&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;So far, so good. You fire up a test copy of your phone app, and leave a voicemail. Playback works successfully. Extra neat. The prospect of sound playback from user-submitted files still gets to you. You’ve seen the lesson learned by others in the industry: always assume user-provided data is hostile. Heck, you &lt;em&gt;were&lt;/em&gt; the hostile user data. Time to get creative.&lt;/p&gt;
+
+&lt;p&gt;Buffer overflow exploits are a known type of vulnerability to watch out for. You’ve heard of them in practice, you even jailbroke your phone with one, but you’ve never really employed one of your own crafting before. You’ve vetted everything else about the PR, but the audio playback is being performed through a third-party (albeit open source) application.&lt;/p&gt;
+
+&lt;p&gt;Yet-another Open-source Library for Orchestrating Sound, as WAV or Another Genre — or YOLOSWAG for short (please never name your project this), being the most popular library for, well, orchestrating sound, is the component of choice. Being as popular as it is, it supports a variety of formats, including some rather obscure codecs you’ve never heard of. With this many independently-contributed codecs, there’s got to be one that wasn’t well-written.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/0*44dxKxmKkMyhy1n8.jpg&quot; alt=&quot;yolo&quot; title=&quot;yolo&quot; /&gt;
+I mean, with a name like that, how could it not be secure?&lt;/p&gt;
+
+&lt;p&gt;In open source projects and closed source projects alike, developers put a lot of their attention towards features which see the most use. This has a correlation with the areas of attention given to security from these same developers. It’s not a criticism; a balance always has to be struck with limited resources, but it can’t be forgotten, that while developers are putting most of their attention towards improving features and creating value-adds, those wanting to break in will have the easiest time usually in the components that did not receive the same time dedication.&lt;/p&gt;
+
+&lt;p&gt;Looking through the YOLOSWAG commit history, you see that one particular format, Audio to the Eleventh Power (or AAAAAAAAAAA, for short) hasn’t seen any changes since it’s first commit, which was provided by a relatively new, infrequently-active committer. A quick review of the codec’s README indicates the format was made as a senior final project for their CS degree. This &lt;em&gt;compelling&lt;/em&gt; backstory granted an approval by the project maintainers to merge it into the master branch.&lt;/p&gt;
+
+&lt;p&gt;In audio file formats, there can be many layers of complexity. Some file formats serve as containers for audio data encoded through a variety of codecs (AIFF and WAV come to mind). Some formats are singular in nature; limited to a specific codec, perhaps lossless, lossy, or no compression measures involved. The greater the complexity, the more possibilities for mistakes, and the harder it becomes for automated pentest tools to find them, if any are being used at all.&lt;/p&gt;
+
+&lt;p&gt;AAAAAAAAAAA, on the other hand, is pretty simple. Lower level languages aren’t your forte, but the simplicity makes it a pretty easy read.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;static int aaaaaaaaaaa_decode_frame(YOLOSWAGContext* context, unsigned char* data, YOLOSWAGPacket* packet) {
+    unsigned int frame_size = 0;
+    char frame[4096] = memset(; // each frame can only be 4096 bytes.
+    memcpy(&amp;amp;frame_size, data, 4); // copy the first four bytes from the data
+    
+    data += 4; // advance the data four bytes
+    memcpy(frame, data, frame_size); // copy the data into frame &amp;lt;&amp;lt;&amp;lt;&amp;lt;&amp;lt;&amp;lt;
+    // ...
+    // decoding logic on frame occurs here, then creation and assignment of decoded PCM data to the packet.
+    // ...
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;“Wait, did that just do what I think it did?”&lt;/p&gt;
+
+&lt;p&gt;Yeah, you got yourself an opportunity for a buffer overflow. The author of AAAAAAAAAAA didn’t bother to check if &lt;code class=&quot;highlighter-rouge&quot;&gt;frame_size&lt;/code&gt; was greater than the actual amount of space allotted to &lt;code class=&quot;highlighter-rouge&quot;&gt;frame&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Of course, there’s a lot of code in the way of getting there. No harm in trying though. You write an audio file in the AAAAAAAAAAA format, using the conversion tools helpfully provided by the YOLOSWAG maintainers. The sound of Tim Allen’s &lt;a href=&quot;https://www.youtube.com/watch?v=KnsiZOJjfUg&quot;&gt;AUUUGH&lt;/a&gt; seems suitable. A test run verifies that the sounds of the 90s are still alive today, even in an audio format written by someone who was too young to have seen it. Time to fire up a hex editor.&lt;/p&gt;
+
+&lt;p&gt;Changing the &lt;code class=&quot;highlighter-rouge&quot;&gt;frame_size&lt;/code&gt; value in the last segment of the file to 5000 should do nicely. Adding some extra garbage data at the end to pad the file to the size, you now have your first test.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*7e8CAbu8sZJkbpmWaSMx2g.png&quot; alt=&quot;bodes well&quot; title=&quot;bodes well&quot; /&gt;
+This bodes well.&lt;/p&gt;
+
+&lt;p&gt;Sure enough, not only did it segfault, you got no word of a stack smashing warning. A little more tweaking to your audio file so you can rearrange the stack to return to a libc call to &lt;code class=&quot;highlighter-rouge&quot;&gt;write&lt;/code&gt; to your serial device (and unlock your lock), and you get &lt;a href=&quot;https://streamable.com/s/vuxvg/sqacun&quot;&gt;this wonderful outcome on your test lock&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;After disclosing your findings to the YOLOSWAG team, you decide it best to limit file support to MP3, and execute the player process as a user with severely limited rights.&lt;/p&gt;
+
+&lt;p&gt;AAAAAAAAAAA, indeed.&lt;/p&gt;</content><author><name></name></author><summary type="html">In Part I, I cover an approach to finding the hacking mindset through looking at your own code. In Part II, I approach this discovery through an analysis of an active hacking attempt. Disclaimer: This story (as well as prior stories) is entirely fictional. While I may refer to publicized vulnerabilities in passing, the “discovered” vulnerabilities within the story do not correspond to any actual product.</summary></entry><entry><title type="html">Thinking Like A Hacker — Part II: When The Backdoor Finds You</title><link href="http://localhost:4000/2017-08-14-thinking-like-a-hacker-part-2" rel="alternate" type="text/html" title="Thinking Like A Hacker — Part II: When The Backdoor Finds You" /><published>2017-08-14T00:00:00-07:00</published><updated>2017-08-14T00:00:00-07:00</updated><id>http://localhost:4000/thinking-like-a-hacker-part-2</id><content type="html" xml:base="http://localhost:4000/2017-08-14-thinking-like-a-hacker-part-2">&lt;p&gt;The world of software engineering is the culmination of efforts — teams assembling new works, improving old works, leveraging the byproducts of other teams, internally and externally to the business. The countless number of eyes poring over most of the tools we rely on gives us a sense of comfort; code having been around for over a decade should be bulletproof, right?&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/0*w8wUTygI3nDBpE55.jpg&quot; alt=&quot;back door&quot; title=&quot;back door&quot; /&gt;
+Ceci n’est pas une porte dérobée. I don’t speak French, but I do speak Google Translate.&lt;/p&gt;
+
+&lt;p&gt;In the less-idyllic real world, we know this isn’t true. Long-standing vulnerabilities in crucial pieces of infrastructure appear every day. At a certain point of making considerations to the components we rely on, a level of acceptable risk has to be determined. We mitigate these risks by instituting firewalls, &lt;a href=&quot;https://communities.cisco.com/community/technology/security/ngfw-firewalls/blog/2017/04/14/equation-group-exploit-hits-newer-cisco-asa-juniper-netscreen&quot;&gt;hoping that a product with security at its focus will never betray us.&lt;/a&gt; We also mitigate these risks by limiting our reliance on other projects, reinventing the wheel where necessary or simply not partaking the next Web 3.0 technology until it is a little more long in the tooth.&lt;/p&gt;
+
+&lt;p&gt;It is often the case that the most unsuspected piece of the architecture is the one that bites us in the end. A great case for this is OpenSSL. It’s frequently taken the brunt of security researchers’ ire in the past few years, but part of this blame comes from the fact that despite it being a project to provide security, few contributors to the project were taking as close an approach towards improving the overall security of the product. Nevertheless, it is used by &lt;a href=&quot;https://www.asecurelife.com/heartbleed-bug/&quot;&gt;about two thirds of all HTTPS-serving websites.&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;In &lt;a href=&quot;/2017-08-12-thinking-like-a-hacker-part-1&quot;&gt;Part I&lt;/a&gt; I spoke from a white box perspective. I have no desire to explicitly train would-be hackers, and there are far better resources to learn from if that is your aim. However, it is not always the case that you will have 100% introspection into all that inhabits your application’s ecosystem. Never mind the level of effort required even if all software used by your project were open source, but generally speaking, there will be components involved for which you simply do not have access to the code. A great example for this is the myriad of graphics, wireless and other hardware drivers used on otherwise open source environments.&lt;/p&gt;
+
+&lt;p&gt;So let’s revisit the first scenario from Part I. I’m going to pick on Larry’s e-commerce site again. Larry’s learned his lesson this time, and had his code thoroughly reviewed. No more vulnerabilities in his code, and he’s starting to follow best practices for managing passwords and deployments. He now even has logging on the queries that get executed, &lt;em&gt;just in case.&lt;/em&gt; Now that his new and improved site is up and running, he gets to rest easy this weekend.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/0*-HhmhuG0Ch9kiPH6.jpg&quot; alt=&quot;nope&quot; title=&quot;nope&quot; /&gt;
+Not in my examples, at least.&lt;/p&gt;
+
+&lt;p&gt;To his dismay, he wakes up to a page in the late hours of the evening: “ALL SHOPS DOWN. CUSTOMER DATA GONE.” Larry’s going to have a very bad Sunday. Reviewing the application logs on the logging service’s portal indicates nothing has gone awry, but still, all of the data is gone. Good thing there’s backups, but if it wasn’t his code, then how? Digging a little deeper into the logs, Larry sees that an address from Romania successfully connected to the database, and then executed a DROP. “How could they have gotten the password?” Larry asks himself. Good question.&lt;/p&gt;
+
+&lt;p&gt;Larry RDPs into the webserver and starts up a copy of SSMS. After restoring the database and resetting all passwords, he shuts off connectivity to the database from all addresses but the web servers, a practice he will likely be reminded of on Monday as one that should have always been the case. Letting his boss know everything is back online, he heads back to bed.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*b1-g4rAKPKwkeZyToTl52Q.png&quot; alt=&quot;time&quot; title=&quot;time&quot; /&gt;
+Time is an illusion. Bedtime doubly so.&lt;/p&gt;
+
+&lt;p&gt;In our hearts, I think we all knew the story wasn’t going to end here. Larry wakes again to the chorus of panic: “ALL SHOPS DOWN. SITES ARE DEFACED.”&lt;/p&gt;
+
+&lt;p&gt;“You’ve got to be kidding.”&lt;/p&gt;
+
+&lt;p&gt;Once again, Larry opens his laptop, this time to confirm the ecommerce stores are in fact all displaying a banner of hacking domination. Once again, he goes to the logs. Some time not long after he restored the databases, the event logs on the webservers indicate a successful RDP session started from that same Romanian address, using &lt;em&gt;his credentials&lt;/em&gt;. Knowing that he certainly didn’t use a password for his account for anything else, the gears start turning as he changes his password. Before anything else though, he issues an emergency redeploy of the webservice, just in case the servers themselves are compromised. Finally, he turns off RDP access to any server but his own address and the office. “Let’s see them work around that one,” he says to himself, just before trying one last time to get some shuteye.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*iEjlw8VHWl4MG_OWMvRuQQ.png&quot; alt=&quot;hacked&quot; title=&quot;hacked&quot; /&gt;
+They worked around that one.&lt;/p&gt;
+
+&lt;p&gt;Realizing that he’s not getting any more sleep this morning, Larry once again looks at the logs, and notices that this time, the site was defaced through editing store items. Swearing up and down there was no way to break the authentication and authorization logic, he looked for patterns. Not all shops had been hacked. Of those that were, all of them had been logged into by the shop account’s administrator since the website was redeployed, followed by the attacker editing their stores as the administrators minutes later. Further, the address of the attacker keeps changing; there’s no way to block them.&lt;/p&gt;
+
+&lt;p&gt;After a heated call with management, Larry once again restores from a backup, and sets up a temporary redirect to an outage page. “These hackers are like magicians. How can they keep doing this?” This time he’s not ruling &lt;em&gt;anything&lt;/em&gt; out. Once again, he reviews the logs, looking for anything that could be in error. After about a half hour of pulling out his hair, he notices that the third party emailing service (used to send customers email, and handle mail-based communication with shops) keeps posting service restart messages. Lining up the timestamps, it becomes apparent that the original attack started just a few hours after the email service restarts began. Having a much better idea about the source of the attack, Larry fires up Wireshark in the hopes of watching it in action. Sure enough…&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*o7SV2_RpANhV3xFiIUW0Iw.png&quot; alt=&quot;oh&quot; title=&quot;oh&quot; /&gt;
+Oh.&lt;/p&gt;
+
+&lt;p&gt;The emailing service, which hasn’t seen updates in years, was using an outdated version of OpenSSL. The mail service API is compromised, sending heartbleed packets back to the service running on the webserver. This means they’ve been reading memory from the server the entire time this attack has been ongoing. It’s how they got the connection string (in memory). It’s how they got the remote desktop credentials (pass the hash attack, in memory). It’s how they got access to every shop administrator who logged in after the redeploy (you guessed it, in memory). After all the efforts of securing the store, Larry was undermined by a third-party component. Had he simply ran a vulnerability scan via a man-in-the-middle testing agent against all services with egress (more importantly, so should have the email service vendor), this would have been detected well in advance.&lt;/p&gt;</content><author><name></name></author><summary type="html">The world of software engineering is the culmination of efforts — teams assembling new works, improving old works, leveraging the byproducts of other teams, internally and externally to the business. The countless number of eyes poring over most of the tools we rely on gives us a sense of comfort; code having been around for over a decade should be bulletproof, right?</summary></entry><entry><title type="html">Thinking Like A Hacker — Part I: Finding The Mindset</title><link href="http://localhost:4000/2017-08-12-thinking-like-a-hacker-part-1" rel="alternate" type="text/html" title="Thinking Like A Hacker — Part I: Finding The Mindset" /><published>2017-08-12T00:00:00-07:00</published><updated>2017-08-12T00:00:00-07:00</updated><id>http://localhost:4000/thinking-like-a-hacker-part-1</id><content type="html" xml:base="http://localhost:4000/2017-08-12-thinking-like-a-hacker-part-1">&lt;p&gt;In my &lt;a href=&quot;/2017-08-11-your-company-should-have-a-red-team&quot;&gt;prior article&lt;/a&gt;, I encourage leadership at tech companies to adopt an official policy for permitting vulnerability research internally. The focus of this post is to discuss the mindset a team needs to get themselves into when engaging in pentesting. One of the first things I hear when talking to developers about vulnerability discovery is that they find it difficult to approach code (either their own or the code of others) with a malicious mindset. &lt;a href=&quot;https://plato.stanford.edu/entries/mencius/#3&quot;&gt;Mencius would be proud&lt;/a&gt;, but that vastly tips the scale in favor of the bad guys, regardless of their philosophical motivations.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*HEgNXnh20V6p7x22QBH_yg.png&quot; alt=&quot;mencius&quot; title=&quot;mencius&quot; /&gt;
+“Your words, alas! would certainly lead all men on to reckon benevolence and righteousness to be calamities.”&lt;/p&gt;
+
+&lt;p&gt;So how does a benevolent mind approach security from an offensive perspective? Perhaps the best route is a little less Mencius, a little more Sun Tzu: know your enemy.&lt;/p&gt;
+
+&lt;h2 id=&quot;finding-the-mindset-through-need-a-locked-front-door&quot;&gt;Finding The Mindset Through Need: A Locked Front Door&lt;/h2&gt;
+
+&lt;p&gt;Most people know to lock their door when they leave their house; a recognition that while most people are good, there are some who wish to do harm, and they will do so via the easiest avenue. A benevolent mind will often forget to check that the windows are also locked, until they find themselves in a situation where such thoughts need occur — i.e. locking oneself out of their home. To trick yourself into the hacker mentality, it may prove useful to put yourself in a desperate mind if nefarious is not a state you can enter.&lt;/p&gt;
+
+&lt;p&gt;Imagine a scenario where a theoretical developer (We’ll call him Larry) has accidentally deleted the configuration files, and thus the connection strings to the database. &lt;em&gt;“Larry, you did keep this info in a password safe, right?” “Oops.”&lt;/em&gt; His custom e-commerce site (note: I’m going to repeatedly pick on e-commerce with examples, as the architecture of these types of sites have a lot of moving pieces with very valuable information) remains happily chugging along, not being one to reload via config changes, but were it to tip over, he’d have a terrible outage. Larry has a copy of the config files for the development environment, which happens to closely mirror the production config, minus the connection strings. Larry also knows that the search feature of his application appends the search term to the query:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// This hurt just as much to write as it does to read
+SqlDataAdapter searchAdapter = new SqlDataAdapter(
+    &quot;SELECT item_id, item_title, item_description FROM items &quot; +
+    &quot;WHERE item_title LIKE '%&quot; + 
+    SearchText + &quot;%' OR item_description LIKE '%&quot; + SearchText +
+    &quot;%';&quot;, connection);
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And lastly, because in this example Larry also isn’t very good at safe database configurations, the DB user in this connection string effectively has superuser privileges. Thus locked out of his house, Larry attempts to open one of your unlocked windows with a search parameter:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;foo%'; ALTER LOGIN ecomuser WITH PASSWORD = 'mynewpass'; --
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Congratulations, theoretical Larry. You just performed a SQL injection, the number one threat on the &lt;a href=&quot;https://www.owasp.org/index.php/Top_10_2013-Top_10&quot;&gt;OWASP Top 10&lt;/a&gt;. And if he could do it so easily, you can guarantee that someone else can, &lt;em&gt;and probably will.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*NIo3ePut7eovMFppTocBnw.png&quot; alt=&quot;sadlarry&quot; title=&quot;sadlarry&quot; /&gt;
+“I was able to restore my application, but…”&lt;/p&gt;
+
+&lt;p&gt;Now this above case was full of many other serious problems (not all inclusive, but in order of decreasing severity):&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;The database user used by the application in this example had superuser privileges. This should &lt;em&gt;never&lt;/em&gt; be the case. Full stop. The only applications which should have this kind of access are the tools which perform your database migrations, and even so they should also be limited to only having administrative control of the specific databases they &lt;em&gt;need&lt;/em&gt; control over. The policy of limiting access granted to the DB user to only what is required for the tasks performed by the application is a fantastic example of &lt;a href=&quot;https://en.wikipedia.org/wiki/Principle_of_least_privilege&quot;&gt;The Principle of Least Privilege&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;Production deployments are not an automated process. This was evidenced by theoretical Larry mistakenly deleting the config files. Other than opportunity for mistakes, a manual deployment process means the life of production servers are in the direct hands of people, who can also act with &lt;em&gt;malice&lt;/em&gt;.&lt;/li&gt;
+  &lt;li&gt;Similar to point 2, there isn’t an immutable, redundant infrastructure for deployments, evidenced by both the manual process for deployments and the fact that deleting a config file on a single server could undermine the application. I’m not so keen on moving everything into cloud services such as AWS (that is a post for another day), but even in locally-hosted environments, there are plenty of ways to have an immutable infrastructure (this is also a post for another day).&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;I certainly hope breaking into your real applications will employ more cunning. &lt;a href=&quot;https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170802-ucm&quot;&gt;But even the giants regularly fall&lt;/a&gt;. &lt;a href=&quot;https://blog.sucuri.net/2017/05/sql-injection-vulnerability-joomla-3-7.html&quot;&gt;Often&lt;/a&gt;. Frequently, developers will avoid the potential for SQL injection by leveraging frameworks to abstract away database access, such as object-relational mapping frameworks or well-vetted data access classes, but turning a blind eye to the risk by assuming safety in third parties can be just as dangerous.&lt;/p&gt;
+
+&lt;h2 id=&quot;finding-the-mindset-through-desperation-this-time-an-actual-locked-door&quot;&gt;Finding The Mindset Through Desperation: This Time An Actual Locked Door&lt;/h2&gt;
+
+&lt;p&gt;Perhaps you &lt;em&gt;do&lt;/em&gt; make sure your windows are locked. Perhaps you have a phone-controlled door lock and you will &lt;em&gt;never&lt;/em&gt; leave home without your phone. Perhaps even, you wrote the door lock yourself because you can’t trust closed source lock providers (&lt;a href=&quot;https://www.wired.com/2013/08/kwikset-smarkey-lock-vulns/&quot;&gt;and there’s precedent for that mistrust&lt;/a&gt;). Since we’re in the land of theoretical scenarios, let me illustrate this “perfect” envisioning of such a creation:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*eufnkks2_p0wlOgFYJVAxg.png&quot; alt=&quot;graph&quot; title=&quot;graph&quot; /&gt;
+To this day, I still don’t understand how people are willing to connect something as crucial as their front door lock to the Internet, but then again most people don’t cover their laptop camera.&lt;/p&gt;
+
+&lt;p&gt;Your architecture is well-vetted. Your authentication and authorization logic is flawless. All SQL is properly parameterized, every action is logged and auditable. The only open port you have is for HTTPS, and your web client app is wholly separate from your lock API. Good for you! These are all smart choices. Your lock is full of awesome (configurable) features, comparable to commercial products:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Bluetooth proximity sensor unlocks the door after extended departure&lt;/li&gt;
+  &lt;li&gt;Ability to query/set lock state from anywhere&lt;/li&gt;
+  &lt;li&gt;Scheduling to unlock/lock door at set times for expected visitors, such as pet sitters&lt;/li&gt;
+  &lt;li&gt;Scrollable message on LCD display informs lock state, can greet visitors&lt;/li&gt;
+  &lt;li&gt;Tiny speaker on lock can also project a welcome message to visitors when door is opened&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;All in all, a seriously solid project for someone going at it on their own. You even made it open source, and published the schematics. Your equally-geeky friends also thought it was awesome, and so now they all have one on their homes. It’s a runaway success.&lt;/p&gt;
+
+&lt;p&gt;One of your friends invites you over to their house for a party. You leave your laptop behind, knowing how wild these soirees can get. You open your Smart Lock app on your phone as you step out the door, and after authenticating with Touch ID, press the “LOCK” button, hearing a satisfying deadbolt click. Safe and sound. Time to party. As the night wears on with too many beers deep to leave room for wiser decisions, your friend decides to make margaritas, and so out comes the blender. You’re all far too gone already to notice that just before the ice went in, so too did your precariously perched phone. Add in some tequila, Cointreau, lime, and you’ve got yourself a Smashed Silicon Valley. Serve with umbrella toothpick.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*8qouAWznomcw0a3mxt8NFw.png&quot; alt=&quot;secret ingredient&quot; title=&quot;secret ingredient&quot; /&gt;
+‘The secret ingredient is “phone”.’&lt;/p&gt;
+
+&lt;p&gt;The next morning arrives, and both a hangover and dread sets in. Your phone is gone, and your laptop is home. Your friend tells you not to worry, just to log in through your web client you so carefully designed. Your friend means well, but doesn’t know you heed the advice of security professionals and use a password manager for everything — which was on your phone.&lt;/p&gt;
+
+&lt;p&gt;Your authentication/authorization logic is “flawless”; no way you’re going to exploit your way in as yourself. A locksmith in the area is going to cost you at least $300 for a lock so exotic, and you’ll probably still end up with damage to your door. The prospect of knocking out a window becomes appealing. You start to mull over the code in your head. “Maybe there’s something I’ve missed.” Now you’re starting to think like a hacker. Your friend lends you her laptop. Stepping backward through your logic: your goal is to open the lock. The lock is opened with a POST request to &lt;code class=&quot;highlighter-rouge&quot;&gt;/lock/{id}&lt;/code&gt;, with a JSON object containing state:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;{
+   &quot;state&quot;: &quot;unlocked&quot;,
+   &quot;message&quot;: &quot;Unlocked&quot;,
+   &quot;opensound&quot;: &quot;default&quot;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The API first verifies the authorization token, and if the token is not permitted to unlock the lock, then you are rejected with a 401. If only you could remember your authorization header. But then, you remembered something else that controls the lock — a schedule. The scheduler has a specific token that is authorized to unlock &lt;em&gt;any&lt;/em&gt; lock, but the API handler for scheduling state changes uses your authorization token to determine the right to change state…&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[HttpPut(&quot;/lock/{id}/schedules&quot;)]
+public async Task&amp;lt;IActionResult&amp;gt; AddScheduleToLock(
+        string id,
+        [FromBody]ScheduleLock scheduleLock) {
+    if (!GetUser().HasRightsToLock(id)) {
+        return Unauthorized();
+    } else {
+        scheduler.publish(new ScheduleLockMessage(
+            id,
+            scheduleLock));
+        return Ok(scheduleLock);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;At first glance, it doesn’t look promising. Let’s dive into the &lt;code class=&quot;highlighter-rouge&quot;&gt;ScheduleLock&lt;/code&gt; class:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public class ScheduleLock : Lock {
+    public ScheduleLock Clone() {
+        return (ScheduleLock)this.MemberwiseClone();
+    }
+    public DateTime ScheduleDate { get; set; }
+    public Recurrence Recurrence { get; set; }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You remember upon seeing this through your bleary eyes, that you wanted to future-proof the scheduler for any new features the lock may have, by simply extending the &lt;code class=&quot;highlighter-rouge&quot;&gt;Lock&lt;/code&gt; class with a scheduled time. Let’s follow this through to the other side, the scheduler. It’s also the component you remember not being the most well-written. The scheduler has a subscriber to the pubsub queue you set up:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;public async Task HandleScheduleLockMessage(
+        ScheduleLockMessage message) {
+    if (DateTime.Compare(message.ScheduleLock.ScheduleDate, DateTime.Now) &amp;lt; 0) {
+        Lock lock = (Lock) message.ScheduleLock;
+        lock.Id = lock.Id ?? message.LockId;
+        
+        if (message.ScheduleLock.Recurrence != Recurrence.Never) {
+            var newMessage = new ScheduleLockMessage(lock.Id,
+                message.ScheduleLock.Clone());
+            switch (message.ScheduleLock.Recurrence) {
+                case Recurrence.Monthly:
+                    newMessage.ScheduleLock.ScheduleDate = 
+                        newMessage.ScheduleLock.ScheduleDate
+                        .AddMonths(1);
+                    break;
+                case Recurrence.Weekly:
+                    newMessage.ScheduleLock.ScheduleDate =
+                        newMessage.ScheduleLock.ScheduleDate
+                        .AddDays(7);
+                    break;
+                case Recurrence.Daily:
+                    newMessage.ScheduleLock.ScheduleDate =
+                        newMessage.ScheduleLock.ScheduleDate
+                        .AddDays(1);
+                    break;
+            }
+            scheduler.publish(newMessage);
+        }
+        
+        DB.Locks.Update(lock);
+    } else {
+        scheduler.publish(message); // just re-enqueue it
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;After mulling it over for a few moments, you notice you are assigning the Id property of the &lt;code class=&quot;highlighter-rouge&quot;&gt;Lock&lt;/code&gt; if it isn’t &lt;em&gt;already&lt;/em&gt; set. Your &lt;code class=&quot;highlighter-rouge&quot;&gt;AddScheduleToLock&lt;/code&gt; API handler simply deserializes whatever properties of &lt;code class=&quot;highlighter-rouge&quot;&gt;ScheduleLock&lt;/code&gt; are provided to it, and the &lt;code class=&quot;highlighter-rouge&quot;&gt;Id&lt;/code&gt; value on the JSON object is &lt;em&gt;never checked&lt;/em&gt;. Uh oh.&lt;/p&gt;
+
+&lt;p&gt;In OWASP terms, this falls under #4 of the Top 10: Insecure Direct Object References, by virtue of a &lt;em&gt;Mass Assignment&lt;/em&gt; vulnerability.&lt;/p&gt;
+
+&lt;p&gt;Creating a test account, you PUT a schedule on your test lock’s URI, using your home lock’s Id (which you accidentally committed early on in some test code, but later removed) in the JSON:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X PUT -H &quot;Authorization: Token WW91IGRpZG4ndCB0aGluayBJJ2QgYWN0dWFsbHkgcHV0IGEgcmVhbCB2YWx1ZSBoZXJlLCBkaWQgeW91Pw==&quot; -d '{ &quot;state&quot;: &quot;unlocked&quot;, &quot;id&quot;: &quot;e5ea783d-b32a-4716-8001-89d7e035c2df&quot;, &quot;scheduledate&quot;: &quot;2017-08-12T08:00:00Z&quot;, &quot;recurrence&quot;: &quot;Never&quot; }' https://api.example.com/v1/lock/4ee62a78-0970-4a2f-bd68-0a678944bb6a/schedules -v
+*   Trying api.example.com...
+* TCP_NODELAY set
+* Connected to api.example.com (0.0.0.0) port 443 (#0)
+* ALPN, offering http/1.1
+* Cipher selection: ALL:!EXPORT:!EXPORT40:!EXPORT56:!aNULL:!LOW:!RC4:@STRENGTH
+* successfully set certificate verify locations:
+*   CAfile: /opt/local/share/curl/curl-ca-bundle.crt
+CApath: none
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS change cipher, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-ECDSA-AES128-GCM-SHA256
+* ALPN, server accepted to use http/1.1
+* Server certificate:
+*  subject: C=US; ST=Somewhere; L=Somewhere View; O=Example Inc; CN=*.example.com
+*  start date: Aug  2 19:27:21 2017 GMT
+*  expire date: Oct 25 19:23:00 2017 GMT
+*  subjectAltName: host &quot;example.com&quot; matched cert's &quot;example.com&quot;
+*  issuer: C=US; O=Example Inc; CN=Example Internet Authority G2
+*  SSL certificate verify ok.
+&amp;gt; PUT /v1/lock/4ee62a78-0970-4a2f-bd68-0a678944bb6a/schedules HTTP/1.1
+&amp;gt; Host: api.example.com
+&amp;gt; User-Agent: curl/7.53.1
+&amp;gt; Accept: */*
+&amp;gt; Content-Length: 132
+&amp;gt; Content-Type: application/json
+&amp;gt;
+* upload completely sent off: 132 out of 132 bytes
+&amp;lt; HTTP/1.1 200 OK
+&amp;lt; Connection: close
+&amp;lt; Content-type: application/json
+&amp;lt;
+* Closing connection 0
+{&quot;state&quot;:&quot;unlocked&quot;,&quot;id&quot;:&quot;e5ea783d-b32a-4716-8001-89d7e035c2df&quot;, &quot;scheduledate&quot;:&quot;2017-08-12T08:00:00Z&quot;,&quot;recurrence&quot;:&quot;Never&quot;,&quot;message&quot;:null,&quot;opensound&quot;:null}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Talk about mixed emotions.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;In Part II, I will discuss the mindset from the perspective of side-channel attacks.&lt;/p&gt;</content><author><name></name></author><summary type="html">In my prior article, I encourage leadership at tech companies to adopt an official policy for permitting vulnerability research internally. The focus of this post is to discuss the mindset a team needs to get themselves into when engaging in pentesting. One of the first things I hear when talking to developers about vulnerability discovery is that they find it difficult to approach code (either their own or the code of others) with a malicious mindset. Mencius would be proud, but that vastly tips the scale in favor of the bad guys, regardless of their philosophical motivations.</summary></entry><entry><title type="html">Your Company Should Have A Red Team</title><link href="http://localhost:4000/2017-08-11-your-company-should-have-a-red-team" rel="alternate" type="text/html" title="Your Company Should Have A Red Team" /><published>2017-08-11T00:00:00-07:00</published><updated>2017-08-11T00:00:00-07:00</updated><id>http://localhost:4000/your-company-should-have-a-red-team</id><content type="html" xml:base="http://localhost:4000/2017-08-11-your-company-should-have-a-red-team">&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/1*uSGYOkkgQ-XVKfdXVOPQjw.png&quot; alt=&quot;red team&quot; title=&quot;red team&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;In the parlance of the Intelligence Community (IC), there exists the concept of a “Red Team” — an oppositional yet internal force which has the sole purpose of finding weaknesses, in order to assess risk and improve effectiveness at handling risk. In the corporate world, this term is more narrow, in that it typically applies to a team tasked with finding vulnerabilities, both in the software produced within, and the surrounding infrastructure (physical and digital). If you don’t already have one, you should seriously consider starting one. If it is too much to ask to have resources dedicated to this full time, then it should at least be something that an internal team is performing part time, preferably as a blend of members from different engineering teams. The resource cost of not having one may far outweigh the possible financial, reputational, and legal costs — an ounce of prevention, etc. While I write this article with an aim towards tech companies, this isn’t something to be ignored by non-tech industries; even a theoretical paper-only clinic need worry about social engineering, for example.&lt;/p&gt;
 

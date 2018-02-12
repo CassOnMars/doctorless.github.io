@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Begin Jekyll SEO tag v2.4.0 -->
+<title>Thinking Like A Hacker — Part I: Finding The Mindset | doctorless.sh</title>
+<meta name="generator" content="Jekyll v3.7.2" />
+<meta property="og:title" content="Thinking Like A Hacker — Part I: Finding The Mindset" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="In my prior article, I encourage leadership at tech companies to adopt an official policy for permitting vulnerability research internally. The focus of this post is to discuss the mindset a team needs to get themselves into when engaging in pentesting. One of the first things I hear when talking to developers about vulnerability discovery is that they find it difficult to approach code (either their own or the code of others) with a malicious mindset. Mencius would be proud, but that vastly tips the scale in favor of the bad guys, regardless of their philosophical motivations." />
+<meta property="og:description" content="In my prior article, I encourage leadership at tech companies to adopt an official policy for permitting vulnerability research internally. The focus of this post is to discuss the mindset a team needs to get themselves into when engaging in pentesting. One of the first things I hear when talking to developers about vulnerability discovery is that they find it difficult to approach code (either their own or the code of others) with a malicious mindset. Mencius would be proud, but that vastly tips the scale in favor of the bad guys, regardless of their philosophical motivations." />
+<link rel="canonical" href="http://localhost:4000/2017-08-12-thinking-like-a-hacker-part-1" />
+<meta property="og:url" content="http://localhost:4000/2017-08-12-thinking-like-a-hacker-part-1" />
+<meta property="og:site_name" content="doctorless.sh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2017-08-12T00:00:00-07:00" />
+<script type="application/ld+json">
+{"description":"In my prior article, I encourage leadership at tech companies to adopt an official policy for permitting vulnerability research internally. The focus of this post is to discuss the mindset a team needs to get themselves into when engaging in pentesting. One of the first things I hear when talking to developers about vulnerability discovery is that they find it difficult to approach code (either their own or the code of others) with a malicious mindset. Mencius would be proud, but that vastly tips the scale in favor of the bad guys, regardless of their philosophical motivations.","@type":"BlogPosting","url":"http://localhost:4000/2017-08-12-thinking-like-a-hacker-part-1","headline":"Thinking Like A Hacker — Part I: Finding The Mindset","dateModified":"2017-08-12T00:00:00-07:00","datePublished":"2017-08-12T00:00:00-07:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2017-08-12-thinking-like-a-hacker-part-1"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="doctorless.sh" />
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" rel="author" href="/">doctorless.sh</a>
+
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Thinking Like A Hacker — Part I: Finding The Mindset</h1>
+  </header>
+
+  <div class="post-content">
+    <p>In my <a href="/2017-08-11-your-company-should-have-a-red-team">prior article</a>, I encourage leadership at tech companies to adopt an official policy for permitting vulnerability research internally. The focus of this post is to discuss the mindset a team needs to get themselves into when engaging in pentesting. One of the first things I hear when talking to developers about vulnerability discovery is that they find it difficult to approach code (either their own or the code of others) with a malicious mindset. <a href="https://plato.stanford.edu/entries/mencius/#3">Mencius would be proud</a>, but that vastly tips the scale in favor of the bad guys, regardless of their philosophical motivations.</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/1600/1*HEgNXnh20V6p7x22QBH_yg.png" alt="mencius" title="mencius" />
+“Your words, alas! would certainly lead all men on to reckon benevolence and righteousness to be calamities.”</p>
+
+<p>So how does a benevolent mind approach security from an offensive perspective? Perhaps the best route is a little less Mencius, a little more Sun Tzu: know your enemy.</p>
+
+<h2 id="finding-the-mindset-through-need-a-locked-front-door">Finding The Mindset Through Need: A Locked Front Door</h2>
+
+<p>Most people know to lock their door when they leave their house; a recognition that while most people are good, there are some who wish to do harm, and they will do so via the easiest avenue. A benevolent mind will often forget to check that the windows are also locked, until they find themselves in a situation where such thoughts need occur — i.e. locking oneself out of their home. To trick yourself into the hacker mentality, it may prove useful to put yourself in a desperate mind if nefarious is not a state you can enter.</p>
+
+<p>Imagine a scenario where a theoretical developer (We’ll call him Larry) has accidentally deleted the configuration files, and thus the connection strings to the database. <em>“Larry, you did keep this info in a password safe, right?” “Oops.”</em> His custom e-commerce site (note: I’m going to repeatedly pick on e-commerce with examples, as the architecture of these types of sites have a lot of moving pieces with very valuable information) remains happily chugging along, not being one to reload via config changes, but were it to tip over, he’d have a terrible outage. Larry has a copy of the config files for the development environment, which happens to closely mirror the production config, minus the connection strings. Larry also knows that the search feature of his application appends the search term to the query:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// This hurt just as much to write as it does to read
+SqlDataAdapter searchAdapter = new SqlDataAdapter(
+    "SELECT item_id, item_title, item_description FROM items " +
+    "WHERE item_title LIKE '%" + 
+    SearchText + "%' OR item_description LIKE '%" + SearchText +
+    "%';", connection);
+</code></pre></div></div>
+
+<p>And lastly, because in this example Larry also isn’t very good at safe database configurations, the DB user in this connection string effectively has superuser privileges. Thus locked out of his house, Larry attempts to open one of your unlocked windows with a search parameter:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>foo%'; ALTER LOGIN ecomuser WITH PASSWORD = 'mynewpass'; --
+</code></pre></div></div>
+
+<p>Congratulations, theoretical Larry. You just performed a SQL injection, the number one threat on the <a href="https://www.owasp.org/index.php/Top_10_2013-Top_10">OWASP Top 10</a>. And if he could do it so easily, you can guarantee that someone else can, <em>and probably will.</em></p>
+
+<p><img src="https://cdn-images-1.medium.com/max/1600/1*NIo3ePut7eovMFppTocBnw.png" alt="sadlarry" title="sadlarry" />
+“I was able to restore my application, but…”</p>
+
+<p>Now this above case was full of many other serious problems (not all inclusive, but in order of decreasing severity):</p>
+
+<ol>
+  <li>The database user used by the application in this example had superuser privileges. This should <em>never</em> be the case. Full stop. The only applications which should have this kind of access are the tools which perform your database migrations, and even so they should also be limited to only having administrative control of the specific databases they <em>need</em> control over. The policy of limiting access granted to the DB user to only what is required for the tasks performed by the application is a fantastic example of <a href="https://en.wikipedia.org/wiki/Principle_of_least_privilege">The Principle of Least Privilege</a>.</li>
+  <li>Production deployments are not an automated process. This was evidenced by theoretical Larry mistakenly deleting the config files. Other than opportunity for mistakes, a manual deployment process means the life of production servers are in the direct hands of people, who can also act with <em>malice</em>.</li>
+  <li>Similar to point 2, there isn’t an immutable, redundant infrastructure for deployments, evidenced by both the manual process for deployments and the fact that deleting a config file on a single server could undermine the application. I’m not so keen on moving everything into cloud services such as AWS (that is a post for another day), but even in locally-hosted environments, there are plenty of ways to have an immutable infrastructure (this is also a post for another day).</li>
+</ol>
+
+<p>I certainly hope breaking into your real applications will employ more cunning. <a href="https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170802-ucm">But even the giants regularly fall</a>. <a href="https://blog.sucuri.net/2017/05/sql-injection-vulnerability-joomla-3-7.html">Often</a>. Frequently, developers will avoid the potential for SQL injection by leveraging frameworks to abstract away database access, such as object-relational mapping frameworks or well-vetted data access classes, but turning a blind eye to the risk by assuming safety in third parties can be just as dangerous.</p>
+
+<h2 id="finding-the-mindset-through-desperation-this-time-an-actual-locked-door">Finding The Mindset Through Desperation: This Time An Actual Locked Door</h2>
+
+<p>Perhaps you <em>do</em> make sure your windows are locked. Perhaps you have a phone-controlled door lock and you will <em>never</em> leave home without your phone. Perhaps even, you wrote the door lock yourself because you can’t trust closed source lock providers (<a href="https://www.wired.com/2013/08/kwikset-smarkey-lock-vulns/">and there’s precedent for that mistrust</a>). Since we’re in the land of theoretical scenarios, let me illustrate this “perfect” envisioning of such a creation:</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/1600/1*eufnkks2_p0wlOgFYJVAxg.png" alt="graph" title="graph" />
+To this day, I still don’t understand how people are willing to connect something as crucial as their front door lock to the Internet, but then again most people don’t cover their laptop camera.</p>
+
+<p>Your architecture is well-vetted. Your authentication and authorization logic is flawless. All SQL is properly parameterized, every action is logged and auditable. The only open port you have is for HTTPS, and your web client app is wholly separate from your lock API. Good for you! These are all smart choices. Your lock is full of awesome (configurable) features, comparable to commercial products:</p>
+
+<ul>
+  <li>Bluetooth proximity sensor unlocks the door after extended departure</li>
+  <li>Ability to query/set lock state from anywhere</li>
+  <li>Scheduling to unlock/lock door at set times for expected visitors, such as pet sitters</li>
+  <li>Scrollable message on LCD display informs lock state, can greet visitors</li>
+  <li>Tiny speaker on lock can also project a welcome message to visitors when door is opened</li>
+</ul>
+
+<p>All in all, a seriously solid project for someone going at it on their own. You even made it open source, and published the schematics. Your equally-geeky friends also thought it was awesome, and so now they all have one on their homes. It’s a runaway success.</p>
+
+<p>One of your friends invites you over to their house for a party. You leave your laptop behind, knowing how wild these soirees can get. You open your Smart Lock app on your phone as you step out the door, and after authenticating with Touch ID, press the “LOCK” button, hearing a satisfying deadbolt click. Safe and sound. Time to party. As the night wears on with too many beers deep to leave room for wiser decisions, your friend decides to make margaritas, and so out comes the blender. You’re all far too gone already to notice that just before the ice went in, so too did your precariously perched phone. Add in some tequila, Cointreau, lime, and you’ve got yourself a Smashed Silicon Valley. Serve with umbrella toothpick.</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/1600/1*8qouAWznomcw0a3mxt8NFw.png" alt="secret ingredient" title="secret ingredient" />
+‘The secret ingredient is “phone”.’</p>
+
+<p>The next morning arrives, and both a hangover and dread sets in. Your phone is gone, and your laptop is home. Your friend tells you not to worry, just to log in through your web client you so carefully designed. Your friend means well, but doesn’t know you heed the advice of security professionals and use a password manager for everything — which was on your phone.</p>
+
+<p>Your authentication/authorization logic is “flawless”; no way you’re going to exploit your way in as yourself. A locksmith in the area is going to cost you at least $300 for a lock so exotic, and you’ll probably still end up with damage to your door. The prospect of knocking out a window becomes appealing. You start to mull over the code in your head. “Maybe there’s something I’ve missed.” Now you’re starting to think like a hacker. Your friend lends you her laptop. Stepping backward through your logic: your goal is to open the lock. The lock is opened with a POST request to <code class="highlighter-rouge">/lock/{id}</code>, with a JSON object containing state:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+   "state": "unlocked",
+   "message": "Unlocked",
+   "opensound": "default"
+}
+</code></pre></div></div>
+
+<p>The API first verifies the authorization token, and if the token is not permitted to unlock the lock, then you are rejected with a 401. If only you could remember your authorization header. But then, you remembered something else that controls the lock — a schedule. The scheduler has a specific token that is authorized to unlock <em>any</em> lock, but the API handler for scheduling state changes uses your authorization token to determine the right to change state…</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[HttpPut("/lock/{id}/schedules")]
+public async Task&lt;IActionResult&gt; AddScheduleToLock(
+        string id,
+        [FromBody]ScheduleLock scheduleLock) {
+    if (!GetUser().HasRightsToLock(id)) {
+        return Unauthorized();
+    } else {
+        scheduler.publish(new ScheduleLockMessage(
+            id,
+            scheduleLock));
+        return Ok(scheduleLock);
+    }
+}
+</code></pre></div></div>
+
+<p>At first glance, it doesn’t look promising. Let’s dive into the <code class="highlighter-rouge">ScheduleLock</code> class:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class ScheduleLock : Lock {
+    public ScheduleLock Clone() {
+        return (ScheduleLock)this.MemberwiseClone();
+    }
+    public DateTime ScheduleDate { get; set; }
+    public Recurrence Recurrence { get; set; }
+}
+</code></pre></div></div>
+
+<p>You remember upon seeing this through your bleary eyes, that you wanted to future-proof the scheduler for any new features the lock may have, by simply extending the <code class="highlighter-rouge">Lock</code> class with a scheduled time. Let’s follow this through to the other side, the scheduler. It’s also the component you remember not being the most well-written. The scheduler has a subscriber to the pubsub queue you set up:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public async Task HandleScheduleLockMessage(
+        ScheduleLockMessage message) {
+    if (DateTime.Compare(message.ScheduleLock.ScheduleDate, DateTime.Now) &lt; 0) {
+        Lock lock = (Lock) message.ScheduleLock;
+        lock.Id = lock.Id ?? message.LockId;
+        
+        if (message.ScheduleLock.Recurrence != Recurrence.Never) {
+            var newMessage = new ScheduleLockMessage(lock.Id,
+                message.ScheduleLock.Clone());
+            switch (message.ScheduleLock.Recurrence) {
+                case Recurrence.Monthly:
+                    newMessage.ScheduleLock.ScheduleDate = 
+                        newMessage.ScheduleLock.ScheduleDate
+                        .AddMonths(1);
+                    break;
+                case Recurrence.Weekly:
+                    newMessage.ScheduleLock.ScheduleDate =
+                        newMessage.ScheduleLock.ScheduleDate
+                        .AddDays(7);
+                    break;
+                case Recurrence.Daily:
+                    newMessage.ScheduleLock.ScheduleDate =
+                        newMessage.ScheduleLock.ScheduleDate
+                        .AddDays(1);
+                    break;
+            }
+            scheduler.publish(newMessage);
+        }
+        
+        DB.Locks.Update(lock);
+    } else {
+        scheduler.publish(message); // just re-enqueue it
+    }
+}
+</code></pre></div></div>
+
+<p>After mulling it over for a few moments, you notice you are assigning the Id property of the <code class="highlighter-rouge">Lock</code> if it isn’t <em>already</em> set. Your <code class="highlighter-rouge">AddScheduleToLock</code> API handler simply deserializes whatever properties of <code class="highlighter-rouge">ScheduleLock</code> are provided to it, and the <code class="highlighter-rouge">Id</code> value on the JSON object is <em>never checked</em>. Uh oh.</p>
+
+<p>In OWASP terms, this falls under #4 of the Top 10: Insecure Direct Object References, by virtue of a <em>Mass Assignment</em> vulnerability.</p>
+
+<p>Creating a test account, you PUT a schedule on your test lock’s URI, using your home lock’s Id (which you accidentally committed early on in some test code, but later removed) in the JSON:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X PUT -H "Authorization: Token WW91IGRpZG4ndCB0aGluayBJJ2QgYWN0dWFsbHkgcHV0IGEgcmVhbCB2YWx1ZSBoZXJlLCBkaWQgeW91Pw==" -d '{ "state": "unlocked", "id": "e5ea783d-b32a-4716-8001-89d7e035c2df", "scheduledate": "2017-08-12T08:00:00Z", "recurrence": "Never" }' https://api.example.com/v1/lock/4ee62a78-0970-4a2f-bd68-0a678944bb6a/schedules -v
+*   Trying api.example.com...
+* TCP_NODELAY set
+* Connected to api.example.com (0.0.0.0) port 443 (#0)
+* ALPN, offering http/1.1
+* Cipher selection: ALL:!EXPORT:!EXPORT40:!EXPORT56:!aNULL:!LOW:!RC4:@STRENGTH
+* successfully set certificate verify locations:
+*   CAfile: /opt/local/share/curl/curl-ca-bundle.crt
+CApath: none
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS change cipher, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-ECDSA-AES128-GCM-SHA256
+* ALPN, server accepted to use http/1.1
+* Server certificate:
+*  subject: C=US; ST=Somewhere; L=Somewhere View; O=Example Inc; CN=*.example.com
+*  start date: Aug  2 19:27:21 2017 GMT
+*  expire date: Oct 25 19:23:00 2017 GMT
+*  subjectAltName: host "example.com" matched cert's "example.com"
+*  issuer: C=US; O=Example Inc; CN=Example Internet Authority G2
+*  SSL certificate verify ok.
+&gt; PUT /v1/lock/4ee62a78-0970-4a2f-bd68-0a678944bb6a/schedules HTTP/1.1
+&gt; Host: api.example.com
+&gt; User-Agent: curl/7.53.1
+&gt; Accept: */*
+&gt; Content-Length: 132
+&gt; Content-Type: application/json
+&gt;
+* upload completely sent off: 132 out of 132 bytes
+&lt; HTTP/1.1 200 OK
+&lt; Connection: close
+&lt; Content-type: application/json
+&lt;
+* Closing connection 0
+{"state":"unlocked","id":"e5ea783d-b32a-4716-8001-89d7e035c2df", "scheduledate":"2017-08-12T08:00:00Z","recurrence":"Never","message":null,"opensound":null}
+</code></pre></div></div>
+
+<p>Talk about mixed emotions.</p>
+
+<hr />
+
+<p>In Part II, I will discuss the mindset from the perspective of side-channel attacks.</p>
+
+  </div>
+
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">doctorless.sh</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">
+            
+              doctorless.sh
+            
+            </li>
+            
+            <li><a class="u-email" href="mailto:dustin.welden@gmail.com">dustin.welden@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+  
+  
+  
+  <li><a href="https://github.com/doctorless"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">doctorless</span></a></li>
+  
+  
+  
+  <li><a href="https://www.twitter.com/doctorlessthan3"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">doctorlessthan3</span></a></li>
+  
+  
+  
+</ul>
+
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>In Securitas Veritas</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
