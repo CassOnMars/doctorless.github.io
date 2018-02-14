@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: default
 title: "Building a Rust Phone, Part 1: Picking the Platform"
 permalink: /2017-01-11-rust-phone-part-1
 ---

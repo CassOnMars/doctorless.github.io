@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: default
 title: "Your Company Should Have A Red Team"
 permalink: /2017-08-11-your-company-should-have-a-red-team
 ---
