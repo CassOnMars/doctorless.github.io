@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: page
 title: "Thinking Like A Hacker — Part I: Finding The Mindset"
 permalink: /2017-08-12-thinking-like-a-hacker-part-1
 ---

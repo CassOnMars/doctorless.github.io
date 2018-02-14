@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: page
 title: "Building a Rust Phone, Part 0: Justifications"
 permalink: /2017-01-08-rust-phone-part-0
 ---

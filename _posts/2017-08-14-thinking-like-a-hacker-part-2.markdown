@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: page
 title: "Thinking Like A Hacker — Part II: When The Backdoor Finds You"
 permalink: /2017-08-14-thinking-like-a-hacker-part-2
 ---

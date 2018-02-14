@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: page
 title: "Thinking Like A Hacker — Part III: At Smart Lock, Your Voice Is Your Password"
 permalink: /2017-08-19-thinking-like-a-hacker-part-3
 ---
